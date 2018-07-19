@@ -108,6 +108,10 @@ class FireMappingToolWindow(QtGui.QMainWindow):
       self.scene_src = config.get('config','scene_dir')
       if not self.scene_src.endswith(os.sep):
           self.scene_src += os.sep
+      #
+      ##yoder:
+      #print('*** DEBUG: scene_src: {}'.format(self.scene_src))
+      #
       self.ndvi_url = config.get('config', 'ndvi_url')
       self.ui.createMapButton.clicked.connect(self.createMapping)
       self.ui.ndviButton.clicked.connect(self.createNDVI)
@@ -676,7 +680,7 @@ class FireMappingToolWindow(QtGui.QMainWindow):
             if not imageList:
                 QtGui.QMessageBox.information(self,
                                               "Information",
-                                              "No Images to load",
+                                              "No Images to load ({} :: {})".format(self.img_src, self.ndvi_pathrow),
                                               QtGui.QMessageBox.Ok)
             else:
                 QtGui.QMessageBox.information(
@@ -889,10 +893,15 @@ class FireMappingToolWindow(QtGui.QMainWindow):
 ##Function to open the Fire folder
 
   def openEventFolder(self):
+      # TODO: looks like this (and maybe some other) scripts are hard-coded with "\" (in the form of "\\"), "back-slash" delimiters.
+      # ... so this totally breaks under Linux, (and Mac?)
       mapping_id = self.GetMapping()
       if mapping_id is None:
             return
-      event_prods_path = os.path.join(self.scene_src, 'event_prods\\fire\\')
+      #
+      # yoder:
+      event_prods_path = os.path.join(self.scene_src, 'event_prods', 'fire')
+      #event_prods_path = os.path.join(self.scene_src, 'event_prods\\fire\\')
       dbDir = os.path.dirname(os.path.realpath(__file__))
       dbName = 'FireInfo.sqlite'
       dbFile = os.path.join(dbDir, dbName)
@@ -915,16 +924,20 @@ class FireMappingToolWindow(QtGui.QMainWindow):
       FireYear = StrFireDate[0]
 
       # Make Fire Folder
-      fire_year_folder = event_prods_path +\
-                       FireYear +\
-                       '\\'
-      fire_folder = fire_year_folder +\
-                  mtbs_id.lower() +\
-                  '\\'
-      mapping_folder = fire_folder +\
-                     'mtbs_' +\
-                     mapping_id +\
-                     '\\'
+      # yoder:
+      fire_year_folder = os.path.join(event_prods_path, FireYear)
+      #fire_year_folder = event_prods_path +\
+      #                 FireYear +\
+      #                 '\\'
+      fire_folder = os.path.join(fire_year_folder, mtbs_id.lower())
+      #fire_folder = fire_year_folder +\
+      #            mtbs_id.lower() +\
+      #            '\\'
+      mapping_folder = os.path.join(fire_folder, 'mtbs_'.format(mapping_id))
+      #mapping_folder = fire_folder +\
+      #               'mtbs_' +\
+      #               mapping_id +\
+      #               '\\'
       os.startfile(mapping_folder)
 
 
@@ -1338,8 +1351,8 @@ class FireMappingToolWindow(QtGui.QMainWindow):
                 prc.ProcessFile(entry)
         else:
             QtGui.QMessageBox.information(None,
-                                          u"No files found to process",
-                                          u"No files found to process",
+                                          u"No files found to process {}".format(self.scene_src),
+                                          u"No files found to process {}".format(self.scene_src),
                                           QtGui.QMessageBox.Ok)
         for gz_file in fileList:
             try:

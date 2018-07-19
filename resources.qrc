@@ -1,0 +1,12 @@
+
+
+
+
+
+
+<RCC>
+  <qresource prefix="/plugins/EMT">
+    <file>Icons/Refresh.PNG</file>
+    <file>Icons/icon.png</file>
+  </qresource>
+</RCC>
